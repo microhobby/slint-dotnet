@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <!-- nuget -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <BuildPackage>true</BuildPackage>
+        <PackageId>SlintDotnet</PackageId>
+        <Version>1.2.19</Version>
+        <Authors>Matheus Castello</Authors>
+        <Company>MicroHobby</Company>
+        <Product>Slint UI .NET</Product>
+        <PackageTags>Slint;ui;graphical user interface;linux;slint ui;embedded linux;gui</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="../target/release/libslint_dotnet.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="$(ProjectDir)../target/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
+        <Content Include="$(ProjectDir)../target/armv7-unknown-linux-gnueabihf/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-arm/native" />
+        <Content Include="$(ProjectDir)../target/aarch64-unknown-linux-gnu/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-arm64/native" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Package the generator in the analyzer directory -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
+    </ItemGroup>
+</Project>
