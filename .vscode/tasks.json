@@ -1,0 +1,269 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "rustup-multiarch",
+            "hide": true,
+            "type": "shell",
+            "command": "rustup",
+            "args": [
+                "target",
+                "add",
+                "aarch64-unknown-linux-gnu",
+                "&&",
+                "rustup",
+                "target",
+                "add",
+                "armv7-unknown-linux-gnueabihf"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always",
+            },
+            "icon": {
+                "id": "flame"
+            },
+            "group": "build"
+        },
+        {
+            "label": "build-multiarch",
+            "hide": false,
+            "command": "cargo",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "SLINT_INCLUDE_GENERATED": "1"
+                }
+            },
+            "args": [
+                "build",
+                "--target",
+                "x86_64-unknown-linux-gnu",
+                "--target",
+                "aarch64-unknown-linux-gnu",
+                "--target",
+                "armv7-unknown-linux-gnueabihf"
+            ],
+            "dependsOn": [
+                "rustup-multiarch"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "icon": {
+                "id": "multiple-windows",
+                "color": "terminal.ansiYellow"
+            },
+            "group": "build"
+        },
+        {
+            "label": "build-container-aarch64",
+            "hide": true,
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "run", "--rm", "-it",
+                "-v", "${workspaceFolder}:/slint-dotnet",
+                "-w", "/slint-dotnet",
+                "-e", "SLINT_INCLUDE_GENERATED=1",
+                "-e", "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true",
+                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.2.0",
+                "cargo",
+                "build",
+                "--target",
+                "aarch64-unknown-linux-gnu",
+                "--release"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "build-container-armhf",
+            "hide": true,
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "run", "--rm", "-it",
+                "-v", "${workspaceFolder}:/slint-dotnet",
+                "-w", "/slint-dotnet",
+                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.2.0",
+                "cargo",
+                "build",
+                "--target",
+                "armv7-unknown-linux-gnueabihf",
+                "--release"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "build-multiarch-container",
+            "type": "shell",
+            "command": "echo ✅",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "icon": {
+                "id": "package",
+                "color": "terminal.ansiYellow"
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-before",
+                "build-container-aarch64",
+                "build-container-armhf",
+                "rnet-gen",
+                "rnet-replace"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "build-debug",
+            "command": "cargo",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "SLINT_INCLUDE_GENERATED": "1",
+                    "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG": "true"
+                }
+            },
+            "args": [
+                "build",
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "icon": {
+                "id": "debug-alt-small",
+                "color": "terminal.ansiYellow"
+            },
+            "group": "build"
+        },
+        {
+            "label": "build-before",
+            "hide": true,
+            "command": "cargo",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "SLINT_INCLUDE_GENERATED": "1",
+                    "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG": "true"
+                }
+            },
+            "args": [
+                "build",
+                "--release",
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "icon": {
+                "id": "flame",
+                "color": "terminal.ansiYellow"
+            },
+            "group": "build"
+        },
+        {
+            "label": "rnet-gen",
+            "hide": true,
+            "command": "rnet-gen",
+            "type": "shell",
+            "options": {
+            },
+            "args": [
+                "${workspaceFolder}/target/release/libslint_dotnet.so",
+                ">",
+                "${workspaceFolder}/target/release/libslint_dotnet.cs",
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "icon": {
+                "id": "flame",
+                "color": "terminal.ansiYellow"
+            },
+            "group": "build",
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "rnet-replace",
+            "hide": true,
+            "type": "shell",
+            "command": "sed",
+            "args": [
+                "-i",
+                "'s/slint_dotnet/\\.\\/libslint_dotnet\\.so/g'",
+                "${workspaceFolder}/target/release/libslint_dotnet.cs"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "analyze",
+            "type": "shell",
+            "command": "ldd",
+            "args": [
+                "${workspaceFolder}/target/release/libslint_dotnet.so",
+                "&&",
+                "ls", "-lah",
+                "${workspaceFolder}/target/release/libslint_dotnet.so"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "dependsOrder": "sequence",
+            "icon": {
+                "id": "checklist",
+                "color": "terminal.ansiYellow"
+            },
+        },
+        {
+            "label": "build-and-test",
+            "command": "dotnet",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/test/"
+            },
+            "args": [
+                "run",
+                "--project",
+                "/home/castello/tmp/slint-dotnet/test/"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "icon": {
+                "id": "workspace-trusted",
+                "color": "terminal.ansiYellow"
+            },
+            "group": "build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-before",
+                "rnet-gen",
+                "rnet-replace",
+                "analyze"
+            ]
+        }
+    ]
+}

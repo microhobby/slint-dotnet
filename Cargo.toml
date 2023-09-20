@@ -1,0 +1,37 @@
+[package]
+name = "slint-dotnet"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "1.10.0" }
+slint = { version = "1.2.1", default-features = false, features = [
+    "backend-winit",
+    "renderer-skia-opengl",
+    "compat-1-2"
+] }
+slint-interpreter = { version = "=1.2.1", default-features = false, features = [
+    "display-diagnostics",
+    "compat-1-2"
+] }
+rnet = { version = "0.2.0" }
+linkme = "0.2.7"
+
+[build-dependencies]
+slint-build = { version = "1.2" }
+
+[lib]
+crate-type = ["cdylib"]
+
+[build]
+rustflags = [
+    "-Z", "sanitizer=address"
+]
+target-triples = [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "armv7-unknown-linux-gnueabihf"
+]

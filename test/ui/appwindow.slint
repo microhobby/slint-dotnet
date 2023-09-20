@@ -1,0 +1,37 @@
+import { Button, HorizontalBox, VerticalBox, AboutSlint } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    height: 480px;
+    width: 640px;
+    background: #2362c2;
+    
+    in-out property<int> counter: 42;
+    in-out property<string> text1: "";
+    in-out property <bool> bool1: true;
+    in-out property <image> img;
+    callback request-increase-value();
+
+    VerticalBox {
+        Text {
+            horizontal-alignment: center;
+            text: "Counter: \{root.counter}";
+        }
+        Image {
+            source: img;
+        }
+        Text {
+            horizontal-alignment: center;
+            text: "\{root.text1}";
+        }
+        HorizontalBox {
+            alignment: center;
+            Button {
+                text: "Increase value";
+                clicked => {
+                    root.text1 = "From Slint";
+                    root.request-increase-value();
+                }
+            }
+        }
+    }
+}
