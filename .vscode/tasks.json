@@ -243,8 +243,6 @@
             },
             "args": [
                 "run",
-                "--project",
-                "/home/castello/tmp/slint-dotnet/test/"
             ],
             "problemMatcher": [
                 "$rustc"

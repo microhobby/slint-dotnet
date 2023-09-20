@@ -3,7 +3,7 @@
 Console.WriteLine("Hello, World!");
 
 Console.WriteLine("Creating...");
-Slint.Create("/home/castello/tmp/slint-dotnet/test/ui/appwindow.slint");
+Slint.Create("./ui/appwindow.slint");
 Console.WriteLine("Created");
 
 Console.WriteLine("Getting properties...");
