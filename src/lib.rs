@@ -11,7 +11,8 @@ use slint::{
     ComponentHandle,
     Image,
     Timer,
-    TimerMode
+    TimerMode,
+    Weak
 };
 use slint_interpreter::{
     ComponentInstance,
@@ -62,6 +63,9 @@ thread_local! {
 thread_local! {
     static CURRENT_INSTANCE: std::cell::RefCell<Option<ComponentInstance>> = Default::default();
 }
+
+// reject modernity, back to the monke
+static mut MAIN_WEAK_INSTANCE: Option<Weak<ComponentInstance>> = None;
 
 #[net]
 pub fn interprete(path: &str) -> Tokens {
@@ -328,12 +332,34 @@ pub fn new_timer(mode: i32, interval: u64, callback: Delegate0<bool>) -> DotNetT
 }
 
 #[net]
+pub fn run_on_ui_thread(callback: Delegate0<bool>) {
+    printdebug!("run_on_ui_thread()");
+
+    // reject modernity, back to the monke
+    let weak_ref = unsafe {
+        MAIN_WEAK_INSTANCE.take().unwrap()
+    };
+    unsafe {
+        MAIN_WEAK_INSTANCE = Some(weak_ref.clone());
+    };
+
+    weak_ref.upgrade_in_event_loop(move |_| {
+        callback.call();
+    }).unwrap();
+}
+
+#[net]
 pub fn run() {
     printdebug!("run()");
 
     CURRENT_INSTANCE.with(|current| {
         let strong_ref = current.borrow_mut().take().unwrap();
         current.replace(Some(strong_ref.clone_strong()));
+        let weak_ref = strong_ref.as_weak();
+        
+        unsafe {
+            MAIN_WEAK_INSTANCE = Some(weak_ref);
+        };        
 
         strong_ref.run().unwrap();
     });
