@@ -9,12 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="../target/release/libslint_dotnet.cs" />
+        <Compile Include="../target/debug/libslint_dotnet.cs" />
     </ItemGroup>
 
     <!-- rule to copy the .so to the bin folder -->
     <Target Name="CopyNativeLibs" BeforeTargets="Build">
-        <Copy SourceFiles="$(ProjectDir)../target/release/libslint_dotnet.so" DestinationFolder="$(OutputPath)" />
+        <Copy SourceFiles="$(ProjectDir)../target/debug/libslint_dotnet.so" DestinationFolder="$(OutputPath)" />
     </Target>
 
     <!-- copy the ui folder -->

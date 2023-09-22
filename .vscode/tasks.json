@@ -202,6 +202,31 @@
             "dependsOrder": "sequence"
         },
         {
+            "label": "rnet-gen-debug",
+            "hide": true,
+            "command": "rnet-gen",
+            "type": "shell",
+            "options": {
+            },
+            "args": [
+                "${workspaceFolder}/target/debug/libslint_dotnet.so",
+                ">",
+                "${workspaceFolder}/target/debug/libslint_dotnet.cs",
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "icon": {
+                "id": "flame",
+                "color": "terminal.ansiYellow"
+            },
+            "group": "build",
+            "dependsOrder": "sequence"
+        },
+        {
             "label": "rnet-replace",
             "hide": true,
             "type": "shell",
