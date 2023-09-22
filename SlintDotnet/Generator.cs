@@ -36,8 +36,22 @@ using SlintAPI = SlintDotnet.SlintDotnet;
 namespace {fileName};
 
 public class Window
-{{
+{{ 
+    private static _MAIN_RUNNING = false;
     private string _slintFile = ""./ui/{fileName}.slint"";
+
+    public static void RunOnUiThread (Action action)
+    {{
+        if (!Window._MAIN_RUNNING) {{
+            throw new Exception(""You can only call Window.RunOnUiThread after call Window.Run"");
+        }}
+
+        SlintAPI.RunOnUiThread(() => {{
+            action();
+            return true;
+        }});
+    }}
+    
 ");
 
         var properties = tokens.props;
@@ -184,6 +198,7 @@ sourceCodeStrWin.Append($@"
 
     public void Run()
     {{
+        Window._MAIN_RUNNING = true;
         SlintAPI.Run();
     }}
 ");
