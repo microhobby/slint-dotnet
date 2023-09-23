@@ -15,7 +15,7 @@ public class Generator : ISourceGenerator
         var home = Environment.GetEnvironmentVariable("HOME");
         var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
 
-        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.19/runtimes/linux-{arch}/native/"; 
+        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-{arch}/native/"; 
         Directory.SetCurrentDirectory(assemblyProbeDirectory);
     
         var sourceCodeStrWin = new StringBuilder("");
@@ -37,7 +37,7 @@ namespace {fileName};
 
 public class Window
 {{ 
-    private static _MAIN_RUNNING = false;
+    private static bool _MAIN_RUNNING = false;
     private string _slintFile = ""./ui/{fileName}.slint"";
 
     public static void RunOnUiThread (Action action)
