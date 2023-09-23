@@ -29,4 +29,12 @@ public class Timer {
 
     public Timer() {
     }
+
+    public void Stop() {
+        SlintAPI.StopTimer(this.RustTimer);
+    }
+
+    public void Restart() {
+        SlintAPI.RestartTimer(this.RustTimer);
+    }
 }

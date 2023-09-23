@@ -332,6 +332,42 @@ pub fn new_timer(mode: i32, interval: u64, callback: Delegate0<bool>) -> DotNetT
 }
 
 #[net]
+pub fn stop_timer(timer: DotNetTimer) {
+    TIMER_POOL.with(| pool | {
+        let pool = pool.borrow_mut().take().unwrap();
+        let mut index = 0;
+
+        // for each timer check if the id match
+        for tmr in pool {
+            if index == timer.timer_id {
+                tmr.stop();
+                break;
+            }
+
+            index += 1;
+        }
+    });
+}
+
+#[net]
+pub fn restart_timer(timer: DotNetTimer) {
+    TIMER_POOL.with(| pool | {
+        let pool = pool.borrow_mut().take().unwrap();
+        let mut index = 0;
+
+        // for each timer check if the id match
+        for tmr in pool {
+            if index == timer.timer_id {
+                tmr.restart();
+                break;
+            }
+
+            index += 1;
+        }
+    });
+}
+
+#[net]
 pub fn run_on_ui_thread(callback: Delegate0<bool>) {
     printdebug!("run_on_ui_thread()");
 
