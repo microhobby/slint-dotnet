@@ -1,5 +1,11 @@
 import { Button, HorizontalBox, VerticalBox, AboutSlint } from "std-widgets.slint";
 
+export struct Test {
+    T1: string,
+    T2: int,
+    T3: bool,
+}
+
 export component AppWindow inherits Window {
     height: 480px;
     width: 640px;
@@ -9,6 +15,7 @@ export component AppWindow inherits Window {
     in-out property<string> text1: "";
     in-out property <bool> bool1: true;
     in-out property <image> img;
+    in-out property <Test> testStruct;
     callback request-increase-value();
 
     VerticalBox {
@@ -29,6 +36,9 @@ export component AppWindow inherits Window {
                 text: "Increase value";
                 clicked => {
                     root.text1 = "From Slint";
+                    testStruct.T1 = "CLICKED";
+                    testStruct.T2 = 42;
+                    testStruct.T3 = true;
                     root.request-increase-value();
                 }
             }

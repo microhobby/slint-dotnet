@@ -19,6 +19,7 @@ use slint_interpreter::{
     ValueType,
     Value
 };
+use i_slint_compiler::langtype::Type;
 
 rnet::root!();
 
@@ -34,14 +35,17 @@ enum DotNetType {
     STRING = 0,
     NUMBER = 1,
     BOOL = 2,
-    IMAGE = 3
+    IMAGE = 3,
+    STRUCT = 4
 }
 
 #[derive(Net)]
 pub struct DotNetValue {
     type_name: String,
     type_type: i32,
-    type_value: String
+    type_value: String,
+    is_struct: bool,
+    struct_props: Vec<DotNetValue>
 }
 
 #[derive(Net)]
@@ -71,32 +75,72 @@ static mut MAIN_WEAK_INSTANCE: Option<Weak<ComponentInstance>> = None;
 pub fn interprete(path: &str) -> Tokens {
     let mut compiler = slint_interpreter::ComponentCompiler::default();
     let path = std::path::Path::new(path);
-    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
+    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();  
 
     let mut m_props: Vec<DotNetValue> = Vec::new();
-    let props = ret_handle.properties();
+    let props = ret_handle.properties_and_callbacks();
 
     for prop in props {
         let p_name = prop.0;
         let p_type = prop.1;
         let val_type;
+        let mut val_struct = false;
+        let mut val_props = Vec::new();
         let val_val = format!(
             "{:?}",
             ""
         );
 
+        printdebug!("{:?}", p_type);
+
         match p_type {
-            ValueType::String => {
+            Type::String => {
                 val_type = DotNetType::STRING;
             },
-            ValueType::Number => {
+            Type::Int32
+            | Type::Float32 => {
                 val_type = DotNetType::NUMBER;
             },
-            ValueType::Bool => {
+            Type::Bool => {
                 val_type = DotNetType::BOOL;
             },
-            ValueType::Image => {
+            Type::Image => {
                 val_type = DotNetType::IMAGE;
+            },
+            Type::Struct { fields, .. } => {
+                val_type = DotNetType::STRUCT;
+                val_struct = true;
+
+                for (field, s_type) in &fields {
+                    let sval_type;
+                    
+                    match s_type {
+                        Type::String => sval_type = DotNetType::STRING,
+                        Type::Int32
+                        | Type::Float32 => sval_type = DotNetType::NUMBER,
+                        Type::Bool => sval_type = DotNetType::BOOL,
+                        Type::Image => sval_type = DotNetType::IMAGE,
+                        Type::Struct { .. } => {
+                            panic!("struct inside struct not supported");
+                        },
+                        _ => {
+                            panic!("Slint type not supported inside a struct");
+                        }
+                    }
+
+                    val_props.push(DotNetValue {
+                        type_name: field.to_string(),
+                        type_type: sval_type as i32,
+                        type_value: "".to_string(),
+                        is_struct: false,
+                        struct_props: Vec::new()
+                    });
+                }
+            },
+            Type::Callback { .. } => {
+                // FIX-ME: when we want to implement callback with arguments
+                // and return types we have to change this
+                continue;
             },
             _ => {
                 panic!("Slint type not supported");
@@ -106,7 +150,9 @@ pub fn interprete(path: &str) -> Tokens {
         m_props.push(DotNetValue {
             type_name: p_name,
             type_type: val_type as i32,
-            type_value: val_val
+            type_value: val_val,
+            is_struct: val_struct,
+            struct_props: val_props
         });
     }
 
@@ -158,12 +204,14 @@ pub fn get_properties() -> Vec<DotNetValue> {
             let p_name = prop.0;
             let p_type = prop.1;
             let val_type;
+            let mut val_struct = false;
+            let mut val_props = Vec::new();
             let val_val = format!(
                 "{:?}",
                 strong_ref.get_property(&p_name).unwrap()
             );
 
-            printdebug!("{}", val_val);
+            printdebug!("property {} value {}", p_name, val_val);
 
             match p_type {
                 ValueType::String => {
@@ -178,6 +226,55 @@ pub fn get_properties() -> Vec<DotNetValue> {
                 ValueType::Image  => {
                     val_type = DotNetType::IMAGE;
                 },
+                ValueType::Struct => {
+                    val_type = DotNetType::STRUCT;
+                    val_struct = true;
+
+                    // create the struct props
+                    let s_val = strong_ref.get_property(&p_name).unwrap(); 
+                    match s_val {
+                        Value::Struct(stru) => {
+                            for field in stru.iter() {
+                                let s_name = field.0.to_string();
+                                let s_type = field.1.value_type();
+                                let sval_type;
+                                let sval_struct = false;
+                                let sval_val = format!(
+                                    "{:?}",
+                                    field.1
+                                );
+
+                                printdebug!("struct field {} value {}", s_name, sval_val);
+
+                                // FIX-ME: for now we do not accept 
+                                // struct inside struct
+                                match s_type {
+                                    ValueType::String => sval_type = DotNetType::STRING,
+                                    ValueType::Number => sval_type = DotNetType::NUMBER,
+                                    ValueType::Bool => sval_type = DotNetType::BOOL,
+                                    ValueType::Image => sval_type = DotNetType::IMAGE,
+                                    ValueType::Struct => {
+                                        panic!("struct inside struct not supported");
+                                    },
+                                    _ => {
+                                        panic!("Slint type not supported inside a struct");
+                                    }
+                                }
+
+                                val_props.push(DotNetValue {
+                                    type_name: s_name,
+                                    type_type: sval_type as i32,
+                                    type_value: sval_val,
+                                    is_struct: sval_struct,
+                                    struct_props: Vec::new()
+                                });
+                            }
+                        }
+                        _ => {
+                            panic!("undefined struct type found ????");
+                        }
+                    }
+                },
                 _ => {
                     panic!("Slint type not supported");
                 }
@@ -186,7 +283,9 @@ pub fn get_properties() -> Vec<DotNetValue> {
             ret.push(DotNetValue {
                 type_name: p_name,
                 type_type: val_type as i32,
-                type_value: val_val
+                type_value: val_val,
+                is_struct: val_struct,
+                struct_props: val_props
             });
         }
     });
@@ -241,13 +340,83 @@ pub fn set_property(value: DotNetValue) {
 }
 
 #[net]
-pub fn get_property(name: &str) -> DotNetValue {
-    printdebug!("get_property()");
+pub fn get_struct(name: &str) -> DotNetValue {
+    printdebug!("get_struct()");
 
     let mut ret: DotNetValue = DotNetValue {
         type_name: "".to_string(),
         type_type: 0,
-        type_value: "".to_string()
+        type_value: "".to_string(),
+        is_struct: true,
+        struct_props: Vec::new()
+    };
+
+    CURRENT_INSTANCE.with(|current| {
+        let strong_ref = current.borrow_mut().take().unwrap();
+        current.replace(Some(strong_ref.clone_strong()));
+
+        let val = strong_ref.get_property(name).unwrap();
+
+        ret.type_name = name.into();
+        ret.type_type = val.value_type() as i32;
+        // there is no "value"
+        ret.type_value = "".to_string();
+
+        match val {
+            Value::Struct(stru) => {
+                for field in stru.iter() {
+                    let s_name = field.0.to_string();
+                    let s_type = field.1.value_type();
+                    let sval_type;
+                    let sval_struct = false;
+                    let sval_val = format!(
+                        "{:?}",
+                        field.1
+                    );
+
+                    printdebug!("struct field {} value {}", s_name, sval_val);
+
+                    // FIX-ME: for now we do not accept 
+                    // struct inside struct
+                    match s_type {
+                        ValueType::String => sval_type = DotNetType::STRING,
+                        ValueType::Number => sval_type = DotNetType::NUMBER,
+                        ValueType::Bool => sval_type = DotNetType::BOOL,
+                        ValueType::Image => sval_type = DotNetType::IMAGE,
+                        ValueType::Struct => {
+                            panic!("struct inside struct not supported");
+                        },
+                        _ => {
+                            panic!("Slint type not supported inside a struct");
+                        }
+                    }
+
+                    ret.struct_props.push(DotNetValue {
+                        type_name: s_name,
+                        type_type: sval_type as i32,
+                        type_value: sval_val,
+                        is_struct: sval_struct,
+                        struct_props: Vec::new()
+                    });
+                }
+            }
+            _ => {
+                panic!("undefined struct type found ????");
+            }
+        }
+    });
+
+    ret
+}
+
+#[net]
+pub fn get_property(name: &str) -> DotNetValue {
+    let mut ret: DotNetValue = DotNetValue {
+        type_name: "".to_string(),
+        type_type: 0,
+        type_value: "".to_string(),
+        is_struct: false,
+        struct_props: Vec::new()
     };
 
     CURRENT_INSTANCE.with(|current| {

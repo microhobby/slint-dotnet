@@ -9,54 +9,15 @@ namespace SlintDotnet.SourceGenerator;
 [Generator]
 public class Generator : ISourceGenerator
 {
-    public void Execute(GeneratorExecutionContext context)
+    protected struct struct_info {
+        public int index;
+        public string struct_name;
+    };
+
+    private string CreateProperties (List<SlintAPI.DotNetValue> props, struct_info? strtI)
     {
-        // FUCK OFF ROSLYN
-        var home = Environment.GetEnvironmentVariable("HOME");
-        var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
-
-        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-{arch}/native/"; 
-        Directory.SetCurrentDirectory(assemblyProbeDirectory);
-    
-        var sourceCodeStrWin = new StringBuilder("");
-        // get the context file without the extension and path
-        var path = context.AdditionalFiles
-            .Single(t => t.Path.EndsWith(".slint"))
-            .Path;
-        // get the slint filename
-        var fileName = Path.GetFileNameWithoutExtension(path);
-
-        var tokens = SlintAPI.Interprete(path);
-
-// add the namespace and class
-sourceCodeStrWin.Append($@"
-using Slint;
-using SlintAPI = SlintDotnet.SlintDotnet;
-
-namespace {fileName};
-
-public class Window
-{{ 
-    private static bool _MAIN_RUNNING = false;
-    private string _slintFile = ""./ui/{fileName}.slint"";
-
-    public static void RunOnUiThread (Action action)
-    {{
-        if (!Window._MAIN_RUNNING) {{
-            throw new Exception(""You can only call Window.RunOnUiThread after call Window.Run"");
-        }}
-
-        SlintAPI.RunOnUiThread(() => {{
-            action();
-            return true;
-        }});
-    }}
-    
-");
-
-        var properties = tokens.props;
-
-        foreach (var property in properties)
+        var sourceCodeStr = new StringBuilder("");
+        foreach (var property in props)
         {
             var valType = property.typeType switch
             {
@@ -77,15 +38,21 @@ public class Window
             };
 
 // add the properties
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
 
     private {valType} _{property.typeName};
     public {valType} {property.typeName} {{
         get {{
 ");
 
-            if (valType != "Image") {
-sourceCodeStrWin.Append($@"
+            if (strtI != null) {
+                // for fields of the struct we need to refresh it from Slint
+sourceCodeStr.Append($@" 
+            var sT = SlintAPI.GetStruct(""{strtI.Value.struct_name}"");
+");
+            } else if (valType != "Image") {
+                // for the primitive types
+sourceCodeStr.Append($@"
             var rT = SlintAPI.GetProperty(""{property.typeName}"")
                         .typeValue
                         .Replace(""Value::{valTypeRust}("", """")
@@ -93,72 +60,211 @@ sourceCodeStrWin.Append($@"
 
 ");
             } else {
-sourceCodeStrWin.Append($@"
+                // for image only, return the Image object
+sourceCodeStr.Append($@"
             var rT = _{property.typeName};
 ");
             }
 
+            if (strtI != null) {
+                // field of struct
+                // prepare it
+sourceCodeStr.Append($@"
+             var rT = sT.structProps
+                        .FirstOrDefault(p => p.typeName == ""{property.typeName}"")
+                        .typeValue
+                        .Replace(""Value::{valTypeRust}("", """")
+                        .Replace("")"", """");
+");
+            }
+
             if (valType == "string") {
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
             return rT;
 ");
             } else if (valType == "float") {
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
                 return float.Parse(rT);
 ");
             } else if (valType == "bool") {
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
                 return bool.Parse(rT);
 ");
+            } else if (valType == "class") {
+sourceCodeStr.Append($@" 
+            var sT = SlintAPI.GetStruct(""{property.typeName}"");
+            this._{valType} = sT;
+            return this._{valType};
+");
             } else {
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
                 return rT;
 ");
             }
 
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
         }}
 
+");
+    
+sourceCodeStr.Append($@"
         set {{
             _{property.typeName} = value;
             SlintAPI.SetProperty(new SlintAPI.DotNetValue {{
                 typeName = ""{property.typeName}"",
 ");
 
-            if (valType == "string") {
-sourceCodeStrWin.Append($@"
+        if (valType == "string") {
+sourceCodeStr.Append($@"
                 typeType = 0,
-                typeValue = value.ToString()
+                typeValue = value.ToString(),
+                isStruct = false,
+                structProps = new List<SlintAPI.DotNetValue>()
 ");
-            } else if (valType == "float") {
-sourceCodeStrWin.Append($@"
+        } else if (valType == "float") {
+sourceCodeStr.Append($@"
                 typeType = 1,
-                typeValue = value.ToString()
+                typeValue = value.ToString(),
+                isStruct = false,
+                structProps = new List<SlintAPI.DotNetValue>()
 ");
-            } else if (valType == "bool") {
-sourceCodeStrWin.Append($@"
+        } else if (valType == "bool") {
+sourceCodeStr.Append($@"
                 typeType = 2,
-                typeValue = value.ToString()
+                typeValue = value.ToString(),
+                isStruct = false,
+                structProps = new List<SlintAPI.DotNetValue>()
 ");
-            } else if (valType == "Image") {
-sourceCodeStrWin.Append($@"
+        } else if (valType == "Image") {
+sourceCodeStr.Append($@"
                 typeType = 3,
-                typeValue = value.Path
+                typeValue = value.Path,
+                isStruct = false,
+                structProps = new List<SlintAPI.DotNetValue>()
 ");
-            } else {
-sourceCodeStrWin.Append($@"
+        } else {
+sourceCodeStr.Append($@"
                 typeType = 0,
-                typeValue = value.ToString()
+                typeValue = value.ToString(),
+                isStruct = false,
+                structProps = new List<SlintAPI.DotNetValue>()
 ");
-            }
+        }
 
-sourceCodeStrWin.Append($@"
+sourceCodeStr.Append($@"
             }});
         }}
     }}
 
 ");
         }
+
+        return sourceCodeStr.ToString();
+    }
+
+    private string CreateStructProperties (List<SlintAPI.DotNetValue> props)
+    {
+        var sourceCodeStr = new StringBuilder("");
+        var struct_index = 0;
+
+        foreach (var prop in props)
+        {
+sourceCodeStr.Append($@"
+
+    private struct{struct_index} _{prop.typeName};
+    public struct{struct_index} {prop.typeName} {{
+        get {{
+            var sT = SlintAPI.GetProperty(""{prop.typeName}"");
+
+        }}
+");
+
+            struct_index++;
+        }
+
+        return sourceCodeStr.ToString();
+    }
+
+    public void Execute(GeneratorExecutionContext context)
+    {
+        // FUCK OFF ROSLYN
+        var home = Environment.GetEnvironmentVariable("HOME");
+        var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
+
+        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-{arch}/native/"; 
+        Directory.SetCurrentDirectory(assemblyProbeDirectory);
+    
+        var sourceCodeStrWin = new StringBuilder("");
+        // get the context file without the extension and path
+        var path = context.AdditionalFiles
+            .Single(t => t.Path.EndsWith(".slint"))
+            .Path;
+        // get the slint filename
+        var fileName = Path.GetFileNameWithoutExtension(path);
+
+        var tokens = SlintAPI.Interprete(path);
+        var structs = tokens.props.Where(
+            p => p.isStruct == true
+        ).ToList();
+        var props = tokens.props.Where(
+            p => p.isStruct == false
+        ).ToList();
+
+// add the namespace and class
+sourceCodeStrWin.Append($@"
+using System.Linq;
+using Slint;
+using SlintAPI = SlintDotnet.SlintDotnet;
+
+namespace {fileName};
+
+");
+
+sourceCodeStrWin.Append($@"
+public class Window
+{{ 
+    private static bool _MAIN_RUNNING = false;
+    private string _slintFile = ""./ui/{fileName}.slint"";
+
+    public void RunOnUiThread (Action action)
+    {{
+        if (!Window._MAIN_RUNNING) {{
+            throw new Exception(""You can only call Window.RunOnUiThread after call Window.Run"");
+        }}
+
+        SlintAPI.RunOnUiThread(() => {{
+            action();
+            return true;
+        }});
+    }}
+    
+");
+
+            var struct_index = 0;
+        foreach (var struc in structs)
+        {
+sourceCodeStrWin.Append($@"
+
+    protected class struct{struct_index}
+    {{
+
+");
+
+            var strI = new struct_info {
+                index = struct_index,
+                struct_name = $"{struc.typeName}"
+            };
+            sourceCodeStrWin.Append(CreateProperties(struc.structProps, strI));
+
+sourceCodeStrWin.Append($@"
+    }}
+
+");
+
+            struct_index++;
+        }
+
+        sourceCodeStrWin.Append(CreateProperties(props, null));
 
         var methods = tokens.calls;
 

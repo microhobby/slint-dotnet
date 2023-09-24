@@ -21,7 +21,9 @@ Slint.SetProperty(new Slint.DotNetValue
 {
     typeName = "img",
     typeType = 3,
-    typeValue = "./ui/assets/torizon_logo_white.svg"
+    typeValue = "./ui/assets/torizon_logo_white.svg",
+    isStruct = false,
+    structProps = new List<Slint.DotNetValue>()
 });
 
 Slint.SetCallback("request-increase-value", () =>
@@ -32,18 +34,28 @@ Slint.SetCallback("request-increase-value", () =>
                 .Replace(")", "");
     var val = float.Parse(sT) + 1;
 
+    // struct
+    var strut = Slint.GetStruct("testStruct");
+    foreach (var fi in strut.structProps) {
+        Console.WriteLine($"Field {fi.typeName} = {fi.typeValue}");
+    }
+
     Slint.SetProperty(new Slint.DotNetValue
     {
         typeName = "counter",
         typeType = 1,
-        typeValue = val.ToString()
+        typeValue = val.ToString(),
+        isStruct = false,
+        structProps = new List<Slint.DotNetValue>()
     });
 
     Slint.SetProperty(new Slint.DotNetValue
     {
         typeName = "img",
         typeType = 3,
-        typeValue = "./ui/assets/toradex_logo.png"
+        typeValue = "./ui/assets/toradex_logo.png",
+        isStruct = false,
+        structProps = new List<Slint.DotNetValue>()
     });
 
     return true;
@@ -71,7 +83,9 @@ new Thread(() =>
             {
                 typeName = "counter",
                 typeType = 1,
-                typeValue = 0.ToString()
+                typeValue = 0.ToString(),
+                isStruct = false,
+                structProps = new List<Slint.DotNetValue>()
             });
 
             return true;
