@@ -294,6 +294,75 @@ pub fn get_properties() -> Vec<DotNetValue> {
 }
 
 #[net]
+pub fn set_struct(value: DotNetValue) {
+    printdebug!("set_struct()");
+
+    CURRENT_INSTANCE.with(|current| {
+        let strong_ref = current.borrow_mut().take().unwrap();
+        current.replace(Some(strong_ref.clone_strong()));
+
+        let name = &value.type_name;
+        let props = value.struct_props;
+        let val = strong_ref.get_property(name).unwrap();
+
+        match val {
+            Value::Struct(mut stru) => {
+                for field in stru.clone().iter() {
+                    for from_dot_net in &props {
+                        if field.0 == from_dot_net.type_name {
+                            printdebug!("Field {} found, updating...", field.0);
+                           
+                            if (DotNetType::STRING as i32) == from_dot_net.type_type {
+                                stru.set_field(
+                                    from_dot_net.type_name.clone().into(),
+                                    Value::String(from_dot_net.type_value.clone().into())
+                                );
+                            }
+                            else if (DotNetType::NUMBER as i32) == from_dot_net.type_type {
+                                stru.set_field(
+                                    from_dot_net.type_name.clone().into(),
+                                    Value::Number(from_dot_net.type_value.parse::<f64>().unwrap())
+                                );
+                            }
+                            else if (DotNetType::BOOL as i32) == from_dot_net.type_type {
+                                let val = if from_dot_net.type_value == "True" {
+                                    true
+                                } else {
+                                    false
+                                };
+                    
+                                stru.set_field(
+                                    from_dot_net.type_name.clone().into(),
+                                    Value::Bool(val)
+                                );
+                            }
+                            else if (DotNetType::IMAGE as i32) == value.type_type {
+                                let path = Path::new(&value.type_value);
+                                let img = Image::load_from_path(path).unwrap();
+                    
+
+                                stru.set_field(
+                                    from_dot_net.type_name.clone().into(),
+                                    Value::Image(img)
+                                );
+                            } else {
+                                panic!("Type {} was not resolved", value.type_type);
+                            }
+                        }   
+                    }
+                }
+
+                // then set the struct back to the component
+                strong_ref.set_property(name, Value::Struct(stru)).unwrap();
+            }
+            _ => {
+                panic!("undefined struct type found or you are trying to access a non struct typep property");
+            }
+        }
+    });
+}
+
+#[net]
 pub fn set_property(value: DotNetValue) {
     printdebug!("set_property()");
 

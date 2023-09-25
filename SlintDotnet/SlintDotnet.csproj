@@ -11,7 +11,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <BuildPackage>true</BuildPackage>
         <PackageId>SlintDotnet</PackageId>
-        <Version>1.2.20</Version>
+        <Version>1.2.21</Version>
         <Authors>Matheus Castello</Authors>
         <Company>MicroHobby</Company>
         <Product>Slint UI .NET</Product>

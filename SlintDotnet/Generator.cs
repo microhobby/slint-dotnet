@@ -110,9 +110,29 @@ sourceCodeStr.Append($@"
 sourceCodeStr.Append($@"
         set {{
             _{property.typeName} = value;
+");
+
+        if (strtI == null) {
+
+sourceCodeStr.Append($@"
             SlintAPI.SetProperty(new SlintAPI.DotNetValue {{
                 typeName = ""{property.typeName}"",
 ");
+        } else {
+sourceCodeStr.Append($@"
+            SlintAPI.SetStruct(new SlintAPI.DotNetValue
+            {{
+                typeName = ""{strtI.Value.struct_name}"",
+                typeType = 4,
+                isStruct = true,
+                typeValue = """",
+                structProps = new List<SlintAPI.DotNetValue>
+                {{
+                    new SlintAPI.DotNetValue
+                    {{
+                        typeName = ""{property.typeName}"",
+ ");
+        }
 
         if (valType == "string") {
 sourceCodeStr.Append($@"
@@ -148,6 +168,13 @@ sourceCodeStr.Append($@"
                 typeValue = value.ToString(),
                 isStruct = false,
                 structProps = new List<SlintAPI.DotNetValue>()
+");
+        }
+
+        if (strtI != null) {
+sourceCodeStr.Append($@"
+                }}
+            }}
 ");
         }
 
@@ -191,7 +218,7 @@ sourceCodeStr.Append($@"
         var home = Environment.GetEnvironmentVariable("HOME");
         var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
 
-        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-{arch}/native/"; 
+        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.21/runtimes/linux-{arch}/native/"; 
         Directory.SetCurrentDirectory(assemblyProbeDirectory);
     
         var sourceCodeStrWin = new StringBuilder("");
@@ -245,7 +272,7 @@ public class Window
         {
 sourceCodeStrWin.Append($@"
 
-    protected class struct{struct_index}
+    public class struct{struct_index}
     {{
 
 ");
@@ -259,6 +286,14 @@ sourceCodeStrWin.Append($@"
 sourceCodeStrWin.Append($@"
     }}
 
+
+    private struct{struct_index} _{struc.typeName} = new struct{struct_index}();
+    public struct{struct_index} {struc.typeName}
+    {{
+        get {{
+            return _{struc.typeName};
+        }}
+    }}
 ");
 
             struct_index++;

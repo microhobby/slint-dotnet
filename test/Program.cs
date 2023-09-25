@@ -40,6 +40,30 @@ Slint.SetCallback("request-increase-value", () =>
         Console.WriteLine($"Field {fi.typeName} = {fi.typeValue}");
     }
 
+    Slint.SetStruct(new Slint.DotNetValue
+    {
+        typeName = "testStruct",
+        typeType = 4,
+        isStruct = true,
+        typeValue = "",
+        structProps = new List<Slint.DotNetValue>
+        {
+            new Slint.DotNetValue
+            {
+                typeName = "T1",
+                typeType = 0,
+                typeValue = "modified",
+                isStruct = false,
+                structProps = new List<Slint.DotNetValue>()
+            }
+        }
+    });
+
+    strut = Slint.GetStruct("testStruct");
+    foreach (var fi in strut.structProps) {
+        Console.WriteLine($"Field {fi.typeName} = {fi.typeValue}");
+    }
+
     Slint.SetProperty(new Slint.DotNetValue
     {
         typeName = "counter",

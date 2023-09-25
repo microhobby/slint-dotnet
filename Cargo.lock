@@ -2877,6 +2877,7 @@ name = "slint-dotnet"
 version = "0.1.0"
 dependencies = [
  "async-std",
+ "i-slint-compiler",
  "linkme",
  "rnet",
  "slint",
