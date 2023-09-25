@@ -63,6 +63,8 @@ Properties are exposed as properties on the instance of the `Window`:
 window.counter = 42;
 ```
 
+> ⚠️ `struct` properties are accessed as properties on the instance of the `Window`
+
 ### Callbacks
 
 The callbacks are also exposed as `Action` properties on the instance of the `Window`:
@@ -74,8 +76,22 @@ window.RequestIncreaseValue = () => {
 ```
 
 > ⚠️ The keywords from the `.slint` file are converted to pascal case.
+
 > ⚠️ Only `void(void)` callbacks are supported for now.
 
+### Changing UI from Different Threads
+
+The UI can only be changed from the UI thread, a panic will be triggered if you try to change the UI from a different thread. To change the UI from a different thread use:
+
+```cs
+  window.RunOnUiThread(() => {
+    window.counter++;
+  });
+```
+
+This will move the action to the Slint `upgrade_in_event_loop` to be executed in the UI thread.
+
+> ⚠️ `Window.RunOnUiThread` can only be called after the `Window.Run` method. An exception will be thrown if called before.
 
 ### Type Mappings
 
@@ -92,5 +108,5 @@ window.RequestIncreaseValue = () => {
 | `physical_length` | ❌ | |
 | `duration` | ❌ |  |
 | `angle` | ❌ |  |
-| structure | ❌ |  |
-| array | ❌ | |
+| `struct` | `object` |  |
+| `array` | ❌ | |
