@@ -75,7 +75,7 @@ static mut MAIN_WEAK_INSTANCE: Option<Weak<ComponentInstance>> = None;
 pub fn interprete(path: &str) -> Tokens {
     let mut compiler = slint_interpreter::ComponentCompiler::default();
     let path = std::path::Path::new(path);
-    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();  
+    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
 
     let mut m_props: Vec<DotNetValue> = Vec::new();
     let props = ret_handle.properties_and_callbacks();
@@ -113,7 +113,7 @@ pub fn interprete(path: &str) -> Tokens {
 
                 for (field, s_type) in &fields {
                     let sval_type;
-                    
+
                     match s_type {
                         Type::String => sval_type = DotNetType::STRING,
                         Type::Int32
@@ -231,7 +231,7 @@ pub fn get_properties() -> Vec<DotNetValue> {
                     val_struct = true;
 
                     // create the struct props
-                    let s_val = strong_ref.get_property(&p_name).unwrap(); 
+                    let s_val = strong_ref.get_property(&p_name).unwrap();
                     match s_val {
                         Value::Struct(stru) => {
                             for field in stru.iter() {
@@ -246,7 +246,7 @@ pub fn get_properties() -> Vec<DotNetValue> {
 
                                 printdebug!("struct field {} value {}", s_name, sval_val);
 
-                                // FIX-ME: for now we do not accept 
+                                // FIX-ME: for now we do not accept
                                 // struct inside struct
                                 match s_type {
                                     ValueType::String => sval_type = DotNetType::STRING,
@@ -311,7 +311,7 @@ pub fn set_struct(value: DotNetValue) {
                     for from_dot_net in &props {
                         if field.0 == from_dot_net.type_name {
                             printdebug!("Field {} found, updating...", field.0);
-                           
+
                             if (DotNetType::STRING as i32) == from_dot_net.type_type {
                                 stru.set_field(
                                     from_dot_net.type_name.clone().into(),
@@ -330,7 +330,7 @@ pub fn set_struct(value: DotNetValue) {
                                 } else {
                                     false
                                 };
-                    
+
                                 stru.set_field(
                                     from_dot_net.type_name.clone().into(),
                                     Value::Bool(val)
@@ -339,7 +339,7 @@ pub fn set_struct(value: DotNetValue) {
                             else if (DotNetType::IMAGE as i32) == value.type_type {
                                 let path = Path::new(&value.type_value);
                                 let img = Image::load_from_path(path).unwrap();
-                    
+
 
                                 stru.set_field(
                                     from_dot_net.type_name.clone().into(),
@@ -348,7 +348,7 @@ pub fn set_struct(value: DotNetValue) {
                             } else {
                                 panic!("Type {} was not resolved", value.type_type);
                             }
-                        }   
+                        }
                     }
                 }
 
@@ -445,7 +445,7 @@ pub fn get_struct(name: &str) -> DotNetValue {
 
                     printdebug!("struct field {} value {}", s_name, sval_val);
 
-                    // FIX-ME: for now we do not accept 
+                    // FIX-ME: for now we do not accept
                     // struct inside struct
                     match s_type {
                         ValueType::String => sval_type = DotNetType::STRING,
@@ -555,7 +555,7 @@ pub fn new_timer(mode: i32, interval: u64, callback: Delegate0<bool>) -> DotNetT
             TimerMode::SingleShot
         };
 
-        let int_duration = 
+        let int_duration =
             Duration::from_millis(interval);
 
         timer.start(time_mode, int_duration, move | | {
@@ -630,10 +630,10 @@ pub fn run() {
         let strong_ref = current.borrow_mut().take().unwrap();
         current.replace(Some(strong_ref.clone_strong()));
         let weak_ref = strong_ref.as_weak();
-        
+
         unsafe {
             MAIN_WEAK_INSTANCE = Some(weak_ref);
-        };        
+        };
 
         strong_ref.run().unwrap();
     });
