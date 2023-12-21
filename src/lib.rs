@@ -19,7 +19,6 @@ use slint_interpreter::{
     ValueType,
     Value
 };
-use i_slint_compiler::langtype::Type;
 
 rnet::root!();
 
@@ -72,101 +71,6 @@ thread_local! {
 static mut MAIN_WEAK_INSTANCE: Option<Weak<ComponentInstance>> = None;
 
 #[net]
-pub fn interprete(path: &str) -> Tokens {
-    let mut compiler = slint_interpreter::ComponentCompiler::default();
-    let path = std::path::Path::new(path);
-    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
-
-    let mut m_props: Vec<DotNetValue> = Vec::new();
-    let props = ret_handle.properties_and_callbacks();
-
-    for prop in props {
-        let p_name = prop.0;
-        let p_type = prop.1;
-        let val_type;
-        let mut val_struct = false;
-        let mut val_props = Vec::new();
-        let val_val = format!(
-            "{:?}",
-            ""
-        );
-
-        printdebug!("{:?}", p_type);
-
-        match p_type {
-            Type::String => {
-                val_type = DotNetType::STRING;
-            },
-            Type::Int32
-            | Type::Float32 => {
-                val_type = DotNetType::NUMBER;
-            },
-            Type::Bool => {
-                val_type = DotNetType::BOOL;
-            },
-            Type::Image => {
-                val_type = DotNetType::IMAGE;
-            },
-            Type::Struct { fields, .. } => {
-                val_type = DotNetType::STRUCT;
-                val_struct = true;
-
-                for (field, s_type) in &fields {
-                    let sval_type;
-
-                    match s_type {
-                        Type::String => sval_type = DotNetType::STRING,
-                        Type::Int32
-                        | Type::Float32 => sval_type = DotNetType::NUMBER,
-                        Type::Bool => sval_type = DotNetType::BOOL,
-                        Type::Image => sval_type = DotNetType::IMAGE,
-                        Type::Struct { .. } => {
-                            panic!("struct inside struct not supported");
-                        },
-                        _ => {
-                            panic!("Slint type not supported inside a struct");
-                        }
-                    }
-
-                    val_props.push(DotNetValue {
-                        type_name: field.to_string(),
-                        type_type: sval_type as i32,
-                        type_value: "".to_string(),
-                        is_struct: false,
-                        struct_props: Vec::new()
-                    });
-                }
-            },
-            Type::Callback { .. } => {
-                // FIX-ME: when we want to implement callback with arguments
-                // and return types we have to change this
-                continue;
-            },
-            _ => {
-                panic!("Slint type not supported");
-            }
-        }
-
-        m_props.push(DotNetValue {
-            type_name: p_name,
-            type_type: val_type as i32,
-            type_value: val_val,
-            is_struct: val_struct,
-            struct_props: val_props
-        });
-    }
-
-    let m_calls = ret_handle.callbacks().collect();
-
-    let tokens = Tokens {
-        props: m_props,
-        calls: m_calls
-    };
-
-    tokens
-}
-
-#[net]
 pub fn create(path: &str) {
     printdebug!("create()");
 
@@ -187,8 +91,7 @@ pub fn create(path: &str) {
     });
 }
 
-#[net]
-pub fn get_properties() -> Vec<DotNetValue> {
+fn internal_get_properties() -> Vec<DotNetValue> {
     printdebug!("get_properties()");
 
     let mut ret: Vec<DotNetValue> = Vec::new();
@@ -291,6 +194,11 @@ pub fn get_properties() -> Vec<DotNetValue> {
     });
 
     ret
+}
+
+#[net]
+pub fn get_properties() -> Vec<DotNetValue> {
+    internal_get_properties()
 }
 
 #[net]
@@ -637,4 +545,28 @@ pub fn run() {
 
         strong_ref.run().unwrap();
     });
+}
+
+#[net]
+pub fn interprete(path: &str) -> Tokens {
+    let mut compiler = slint_interpreter::ComponentCompiler::default();
+    let path = std::path::Path::new(path);
+    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
+    let component = ret_handle.create().unwrap();
+
+    // to reuse the get_properties() function
+    CURRENT_INSTANCE.with(
+        |current|
+            current.replace(Some(component.clone_strong()))
+    );
+
+    let m_props = internal_get_properties();
+    let m_calls = ret_handle.callbacks().collect();
+
+    let tokens = Tokens {
+        props: m_props,
+        calls: m_calls
+    };
+
+    tokens
 }
