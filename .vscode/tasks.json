@@ -2,6 +2,66 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "replace-nuget-debug",
+            "type": "shell",
+            "command": "cp",
+            "args": [
+                "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/lib/netstandard2.0/SlintDotnet.dll", "&&",
+                "cp",
+                "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
+                "cp",
+                "${workspaceFolder}/target/debug/libslint_dotnet.so",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-x64/native/libslint_dotnet.so"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-debug",
+                "rnet-gen-debug",
+                "rnet-replace-debug"
+            ],
+            "icon": {
+                "color": "terminal.ansiBlack",
+                "id": "debug"
+            }
+        },
+        {
+            "label": "replace-nuget-release",
+            "type": "shell",
+            "command": "cp",
+            "args": [
+                "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/lib/netstandard2.0/SlintDotnet.dll", "&&",
+                "cp",
+                "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
+                "cp",
+                "${workspaceFolder}/target/release/libslint_dotnet.so",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-x64/native/libslint_dotnet.so", "&&",
+                "cp",
+                "${workspaceFolder}/target/aarch64-unknown-linux-gnu/release/libslint_dotnet.so",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-arm64/native/libslint_dotnet.so", "&&",
+                "cp",
+                "${workspaceFolder}/target/armv7-unknown-linux-gnueabihf/release/libslint_dotnet.so",
+                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-arm/native/libslint_dotnet.so"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-multiarch-container",
+            ],
+            "icon": {
+                "color": "terminal.ansiBlack",
+                "id": "debug"
+            }
+        },
+        {
             "label": "rustup-multiarch",
             "hide": true,
             "type": "shell",
@@ -72,7 +132,7 @@
                 "-w", "/slint-dotnet",
                 "-e", "SLINT_INCLUDE_GENERATED=1",
                 "-e", "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true",
-                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.2.0",
+                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.2.2",
                 "cargo",
                 "build",
                 "--target",
@@ -92,7 +152,7 @@
                 "run", "--rm", "-it",
                 "-v", "${workspaceFolder}:/slint-dotnet",
                 "-w", "/slint-dotnet",
-                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.2.0",
+                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.2.2",
                 "cargo",
                 "build",
                 "--target",
@@ -235,6 +295,20 @@
                 "-i",
                 "'s/slint_dotnet/\\.\\/libslint_dotnet\\.so/g'",
                 "${workspaceFolder}/target/release/libslint_dotnet.cs"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "rnet-replace-debug",
+            "hide": true,
+            "type": "shell",
+            "command": "sed",
+            "args": [
+                "-i",
+                "'s/slint_dotnet/\\.\\/libslint_dotnet\\.so/g'",
+                "${workspaceFolder}/target/debug/libslint_dotnet.cs"
             ],
             "problemMatcher": [
                 "$rustc"

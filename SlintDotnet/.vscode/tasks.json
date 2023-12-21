@@ -18,6 +18,27 @@
                 "id": "flame"
             },
             "group": "build"
+        },
+        {
+            "label": "publish-nuget",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "nuget",
+                "push",
+                "${workspaceFolder}/bin/Debug/SlintDotnet.1.2.22.nupkg",
+                "--api-key",
+                "$(", "cat", "${workspaceFolder}/.keys/nugetApi.key", ")",
+                "--source",
+                "https://api.nuget.org/v3/index.json"
+            ],
+            "dependsOn": [
+                "build"
+            ],
+            "dependsOrder": "sequence",
+            "icon": {
+                "id": "package"
+            }
         }
     ]
 }
