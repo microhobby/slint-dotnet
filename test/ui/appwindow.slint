@@ -10,13 +10,16 @@ export component AppWindow inherits Window {
     height: 480px;
     width: 640px;
     background: #2362c2;
-    
+
     in-out property<int> counter: 42;
     in-out property<string> text1: "";
     in-out property <bool> bool1: true;
     in-out property <image> img;
     in-out property <Test> testStruct;
     callback request-increase-value();
+
+    // binding
+    in-out property<length> Width <=> root.width;
 
     VerticalBox {
         Text {

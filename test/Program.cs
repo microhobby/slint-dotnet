@@ -26,6 +26,9 @@ Slint.SetProperty(new Slint.DotNetValue
     structProps = new List<Slint.DotNetValue>()
 });
 
+var binding = Slint.GetProperty("Width");
+Console.WriteLine($"Binding: {binding.typeName} = {binding.typeValue}");
+
 Slint.SetCallback("request-increase-value", () =>
 {
     var dt = Slint.GetProperty("counter");
