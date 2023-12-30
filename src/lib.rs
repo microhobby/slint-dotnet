@@ -1,6 +1,7 @@
 use std::{
     path::Path,
-    time::Duration
+    time::Duration,
+    sync::Once
 };
 use rnet::{
     Net,
@@ -89,6 +90,15 @@ pub fn create(path: &str) {
     TIMER_POOL.with(| pool | {
         pool.replace(Some(Vec::new()));
     });
+}
+
+fn internal_get_properties_weak(component_weak: Weak<ComponentInstance>) -> Vec<DotNetValue> {
+    CURRENT_INSTANCE.with(
+        |current|
+            current.replace(Some(component_weak.unwrap()))
+    );
+
+    internal_get_properties()
 }
 
 fn internal_get_properties() -> Vec<DotNetValue> {
@@ -547,26 +557,31 @@ pub fn run() {
     });
 }
 
+// Fix the Roslyn source generator race condition
+static INIT: Once = Once::new();
+static mut COMPONENT: Option<ComponentInstance> = None;
+
 #[net]
 pub fn interprete(path: &str) -> Tokens {
     let mut compiler = slint_interpreter::ComponentCompiler::default();
     let path = std::path::Path::new(path);
     let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
-    let component = ret_handle.create().unwrap();
 
-    // to reuse the get_properties() function
-    CURRENT_INSTANCE.with(
-        |current|
-            current.replace(Some(component.clone_strong()))
-    );
+    INIT.call_once(|| {
+        unsafe {
+            COMPONENT = Some(ret_handle.create().unwrap());
+        }
+    });
 
-    let m_props = internal_get_properties();
-    let m_calls = ret_handle.callbacks().collect();
+    unsafe {
+        let m_calls = COMPONENT.as_ref().unwrap().definition().callbacks().collect();
+        let m_props = internal_get_properties_weak(COMPONENT.as_ref().unwrap().as_weak());
 
-    let tokens = Tokens {
-        props: m_props,
-        calls: m_calls
-    };
+        let tokens = Tokens {
+            props: m_props,
+            calls: m_calls
+        };
 
-    tokens
+        tokens
+    }
 }
