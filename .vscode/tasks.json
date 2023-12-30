@@ -7,13 +7,13 @@
             "command": "cp",
             "args": [
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/lib/netstandard2.0/SlintDotnet.dll", "&&",
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/target/debug/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-x64/native/libslint_dotnet.so"
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native/libslint_dotnet.so"
             ],
             "problemMatcher": [
                 "$rustc"

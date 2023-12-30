@@ -9,6 +9,9 @@ namespace SlintDotnet.SourceGenerator;
 [Generator]
 public class Generator : ISourceGenerator
 {
+    // TODO: do not forget to update the version
+    private static string PACKAGE_VERSION = "1.2.25";
+
     protected struct struct_info {
         public int index;
         public string struct_name;
@@ -47,7 +50,7 @@ sourceCodeStr.Append($@"
 
             if (strtI != null) {
                 // for fields of the struct we need to refresh it from Slint
-sourceCodeStr.Append($@" 
+sourceCodeStr.Append($@"
             var sT = SlintAPI.GetStruct(""{strtI.Value.struct_name}"");
 ");
             } else if (valType != "Image") {
@@ -91,7 +94,7 @@ sourceCodeStr.Append($@"
                 return bool.Parse(rT);
 ");
             } else if (valType == "class") {
-sourceCodeStr.Append($@" 
+sourceCodeStr.Append($@"
             var sT = SlintAPI.GetStruct(""{property.typeName}"");
             this._{valType} = sT;
             return this._{valType};
@@ -106,7 +109,7 @@ sourceCodeStr.Append($@"
         }}
 
 ");
-    
+
 sourceCodeStr.Append($@"
         set {{
             _{property.typeName} = value;
@@ -218,9 +221,9 @@ sourceCodeStr.Append($@"
         var home = Environment.GetEnvironmentVariable("HOME");
         var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
 
-        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/1.2.21/runtimes/linux-{arch}/native/"; 
+        string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/{PACKAGE_VERSION}/runtimes/linux-{arch}/native/";
         Directory.SetCurrentDirectory(assemblyProbeDirectory);
-    
+
         var sourceCodeStrWin = new StringBuilder("");
         // get the context file without the extension and path
         var path = context.AdditionalFiles
@@ -249,7 +252,7 @@ namespace {fileName};
 
 sourceCodeStrWin.Append($@"
 public class Window
-{{ 
+{{
     private static bool _MAIN_RUNNING = false;
     private string _slintFile = ""./ui/{fileName}.slint"";
 
@@ -264,7 +267,7 @@ public class Window
             return true;
         }});
     }}
-    
+
 ");
 
             var struct_index = 0;

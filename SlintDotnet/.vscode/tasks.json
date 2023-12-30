@@ -5,6 +5,11 @@
             "label": "build",
             "command": "dotnet",
             "type": "shell",
+            "options": {
+                "env": {
+                    "PACKAGE_VERSION": "${config:package_version}"
+                }
+            },
             "args": [
                 "build"
             ],
@@ -26,7 +31,7 @@
             "args": [
                 "nuget",
                 "push",
-                "${workspaceFolder}/bin/Debug/SlintDotnet.1.2.22.nupkg",
+                "${workspaceFolder}/bin/Debug/SlintDotnet.${config:package_version}.nupkg",
                 "--api-key",
                 "$(", "cat", "${workspaceFolder}/.keys/nugetApi.key", ")",
                 "--source",
