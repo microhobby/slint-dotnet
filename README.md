@@ -70,8 +70,8 @@ window.counter = 42;
 The callbacks are also exposed as `Action` properties on the instance of the `Window`:
 
 ```cs
-window.RequestIncreaseValue = () => { 
-    window.counter++; 
+window.RequestIncreaseValue = () => {
+    window.counter++;
 };
 ```
 
@@ -95,18 +95,18 @@ This will move the action to the Slint `upgrade_in_event_loop` to be executed in
 
 ### Type Mappings
 
-| `.slint` Type | C# Type | Notes |
-| --- | --- | --- |
-| `int` | `Float` | |
-| `float` | `Float` | |
-| `string` | `String` | |
-| `bool` | `bool` | |
-| `image` | `Slint.Image` | |
-| `Timer` | `Slint.Timer` | |
-| `color` | ❌ |  |
-| `length` | ❌ | |
-| `physical_length` | ❌ | |
-| `duration` | ❌ |  |
-| `angle` | ❌ |  |
-| `struct` | `object` |  |
-| `array` | ❌ | |
+| `.slint` Type     | C# Type       | Notes |
+| ----------------- | ------------- | ----- |
+| `int`             | `Float`       |       |
+| `float`           | `Float`       |       |
+| `string`          | `String`      |       |
+| `bool`            | `bool`        |       |
+| `image`           | `Slint.Image` |       |
+| `Timer`           | `Slint.Timer` |       |
+| `color`           | ❌            |       |
+| `length`          | `Float`       |       |
+| `physical_length` | ❌            |       |
+| `duration`        | ❌            |       |
+| `angle`           | ❌            |       |
+| `struct`          | `object`      |       |
+| `array`           | ❌            |       |
