@@ -77,7 +77,15 @@ pub fn create(path: &str) {
 
     let mut compiler = slint_interpreter::ComponentCompiler::default();
     let path = std::path::Path::new(path);
-    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
+    let compiler_ret = async_std::task::block_on(compiler.build_from_path(path));
+
+    // check if we had some Slint lang error
+    if compiler.diagnostics().len() > 0 {
+        slint_interpreter::print_diagnostics(compiler.diagnostics());
+        panic!("Slint compilation failed");
+    }
+
+    let ret_handle = compiler_ret.unwrap();
 
     slint_interpreter::print_diagnostics(compiler.diagnostics());
     let component = ret_handle.create().unwrap();
@@ -565,7 +573,25 @@ static mut COMPONENT: Option<ComponentInstance> = None;
 pub fn interprete(path: &str) -> Tokens {
     let mut compiler = slint_interpreter::ComponentCompiler::default();
     let path = std::path::Path::new(path);
-    let ret_handle = async_std::task::block_on(compiler.build_from_path(path)).unwrap();
+    let compiler_ret = async_std::task::block_on(compiler.build_from_path(path));
+
+    // check if we had some Slint lang error
+    if compiler.diagnostics().len() > 0 {
+        slint_interpreter::print_diagnostics(compiler.diagnostics());
+
+        // we do not panic here because we are only developing
+        // the roslyn source generator should not crash omnisharp server
+        println!("Slint compilation failed");
+
+        // return nothing
+        return Tokens {
+            props: Vec::new(),
+            calls: Vec::new()
+        };
+    }
+
+    // ok, we are good to go
+    let ret_handle = compiler_ret.unwrap();
 
     INIT.call_once(|| {
         unsafe {
