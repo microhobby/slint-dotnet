@@ -10,7 +10,7 @@ namespace SlintDotnet.SourceGenerator;
 public class Generator : ISourceGenerator
 {
     // TODO: do not forget to update the version
-    private static string PACKAGE_VERSION = "1.2.26";
+    private static string PACKAGE_VERSION = "1.2.28";
 
     protected struct struct_info {
         public int index;
