@@ -465,6 +465,18 @@ pub fn set_callback(name: &str, callback: Delegate0<bool>) {
 }
 
 #[net]
+pub fn call_callback(name: &str) {
+    printdebug!("call_callback()");
+
+    CURRENT_INSTANCE.with(|current| {
+        let strong_ref = current.borrow_mut().take().unwrap();
+        current.replace(Some(strong_ref.clone_strong()));
+
+        strong_ref.invoke(name, &[]).unwrap();
+    });
+}
+
+#[net]
 pub fn new_timer(mode: i32, interval: u64, callback: Delegate0<bool>) -> DotNetTimer {
     let ret = DotNetTimer {
         timer_id: -1,
