@@ -29,6 +29,8 @@ Slint.SetProperty(new Slint.DotNetValue
 var binding = Slint.GetProperty("Width");
 Console.WriteLine($"Binding: {binding.typeName} = {binding.typeValue}");
 
+Slint.CallCallback("printo");
+
 Slint.SetCallback("request-increase-value", () =>
 {
     var dt = Slint.GetProperty("counter");

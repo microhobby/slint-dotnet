@@ -21,6 +21,13 @@ export component AppWindow inherits Window {
     // binding
     in-out property<length> Width <=> root.width;
 
+    // pure callback
+    callback printo();
+
+    printo => {
+        debug("printo called");
+    }
+
     VerticalBox {
         Text {
             horizontal-alignment: center;
