@@ -35,19 +35,19 @@
             "command": "cp",
             "args": [
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/lib/netstandard2.0/SlintDotnet.dll", "&&",
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/target/release/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-x64/native/libslint_dotnet.so", "&&",
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native/libslint_dotnet.so", "&&",
                 "cp",
                 "${workspaceFolder}/target/aarch64-unknown-linux-gnu/release/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-arm64/native/libslint_dotnet.so", "&&",
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm64/native/libslint_dotnet.so", "&&",
                 "cp",
                 "${workspaceFolder}/target/armv7-unknown-linux-gnueabihf/release/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/1.2.20/runtimes/linux-arm/native/libslint_dotnet.so"
+                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm/native/libslint_dotnet.so"
             ],
             "problemMatcher": [
                 "$rustc"
@@ -132,7 +132,7 @@
                 "-w", "/slint-dotnet",
                 "-e", "SLINT_INCLUDE_GENERATED=1",
                 "-e", "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true",
-                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.2.2",
+                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.4.1",
                 "cargo",
                 "build",
                 "--target",
@@ -152,7 +152,7 @@
                 "run", "--rm", "-it",
                 "-v", "${workspaceFolder}:/slint-dotnet",
                 "-w", "/slint-dotnet",
-                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.2.2",
+                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.4.1",
                 "cargo",
                 "build",
                 "--target",

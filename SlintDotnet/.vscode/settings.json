@@ -1,0 +1,6 @@
+{
+    "package_version": "1.4.0",
+    "files.insertFinalNewline": true,
+    "workbench.activityBar.location": "top",
+    "workbench.sideBar.location": "right",
+}
