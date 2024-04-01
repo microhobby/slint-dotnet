@@ -132,7 +132,7 @@
                 "-w", "/slint-dotnet",
                 "-e", "SLINT_INCLUDE_GENERATED=1",
                 "-e", "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true",
-                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.4.1",
+                "commontorizon/slint-sdk-arm64:3.0.9-bookworm-1.5.1",
                 "cargo",
                 "build",
                 "--target",
@@ -152,7 +152,7 @@
                 "run", "--rm", "-it",
                 "-v", "${workspaceFolder}:/slint-dotnet",
                 "-w", "/slint-dotnet",
-                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.4.1",
+                "commontorizon/slint-sdk-arm:3.0.9-bookworm-1.5.1",
                 "cargo",
                 "build",
                 "--target",
@@ -338,7 +338,10 @@
             "command": "dotnet",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/test/"
+                "cwd": "${workspaceFolder}/test/",
+                "env": {
+                    "WAYLAND_DISPLAY": ""
+                }
             },
             "args": [
                 "run",
