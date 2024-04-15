@@ -10,7 +10,7 @@ namespace SlintDotnet.SourceGenerator;
 public class Generator : ISourceGenerator
 {
     // TODO: do not forget to update the version
-    private static string PACKAGE_VERSION = "1.5.1";
+    private static string PACKAGE_VERSION = "1.5.4";
 
     protected struct struct_info {
         public int index;
@@ -242,6 +242,7 @@ sourceCodeStr.Append($@"
 
 // add the namespace and class
 sourceCodeStrWin.Append($@"
+using System;
 using System.Linq;
 using Slint;
 using SlintAPI = SlintDotnet.SlintDotnet;
@@ -254,7 +255,8 @@ sourceCodeStrWin.Append($@"
 public class Window
 {{
     private static bool _MAIN_RUNNING = false;
-    private string _slintFile = ""./ui/{fileName}.slint"";
+    private static string BIN_PATH = AppContext.BaseDirectory;
+    private string _slintFile =  BIN_PATH + ""/ui/{fileName}.slint"";
 
     public void RunOnUiThread (Action action)
     {{
