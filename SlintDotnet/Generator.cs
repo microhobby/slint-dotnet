@@ -342,7 +342,6 @@ sourceCodeStrWin.Append($@"
 
     public Window()
     {{
-        Console.WriteLine(""Hello from {fileName}!"");
         SlintAPI.Create(_slintFile);
     }}
 
