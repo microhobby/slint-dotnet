@@ -10,6 +10,7 @@ build = "build.rs"
 async-std = { version = "1.10.0" }
 slint = { version = "1.5.1", default-features = false, features = [
     "backend-winit",
+    "backend-linuxkms-noseat",
     "renderer-skia-opengl",
     "compat-1-2"
 ] }
