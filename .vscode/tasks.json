@@ -372,6 +372,22 @@
                 "rnet-replace",
                 "analyze"
             ]
+        },
+        {
+            "label": "install-rnet-gen",
+            "type": "shell",
+            "command": "cargo",
+            "args": [
+                "install",
+                "rnet-gen"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "icon": {
+                "id": "cloud-download",
+                "color": "terminal.ansiYellow"
+            },
         }
     ]
 }
