@@ -1,3 +1,8 @@
 {
-    "package_version": "1.4.0"
+    "window.title": "Slint-dotnetsdk",
+    "window.width": 1229,
+    "window.height": 1013,
+    "package_version": "1.5.7",
+    "workbench.sideBar.location": "right",
+    "debug.allowBreakpointsEverywhere": true
 }

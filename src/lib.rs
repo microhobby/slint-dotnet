@@ -1,7 +1,5 @@
 use std::{
-    path::Path,
-    time::Duration,
-    sync::Once
+    any::Any, borrow::Borrow, path::Path, rc::Rc, sync::Once, time::Duration
 };
 use rnet::{
     Net,
@@ -9,11 +7,7 @@ use rnet::{
     Delegate0
 };
 use slint::{
-    ComponentHandle,
-    Image,
-    Timer,
-    TimerMode,
-    Weak
+    ComponentHandle, Image, Model, ModelExt, ModelRc, Timer, TimerMode, VecModel, Weak
 };
 use slint_interpreter::{
     ComponentInstance,
@@ -36,7 +30,8 @@ enum DotNetType {
     NUMBER = 1,
     BOOL = 2,
     IMAGE = 3,
-    STRUCT = 4
+    STRUCT = 4,
+    ARRAY = 5
 }
 
 #[derive(Net)]
@@ -45,7 +40,9 @@ pub struct DotNetValue {
     type_type: i32,
     type_value: String,
     is_struct: bool,
-    struct_props: Vec<DotNetValue>
+    is_array: bool,
+    struct_props: Vec<DotNetValue>,
+    array_items: Vec<DotNetValue>
 }
 
 #[derive(Net)]
@@ -126,7 +123,9 @@ fn internal_get_properties() -> Vec<DotNetValue> {
             let p_type = prop.1;
             let val_type;
             let mut val_struct = false;
+            let mut val_array: bool = false;
             let mut val_props = Vec::new();
+            let mut val_items = Vec::new();
             let val_val = format!(
                 "{:?}",
                 strong_ref.get_property(&p_name).unwrap()
@@ -146,6 +145,55 @@ fn internal_get_properties() -> Vec<DotNetValue> {
                 },
                 ValueType::Image  => {
                     val_type = DotNetType::IMAGE;
+                },
+                ValueType::Model => {
+                    val_type = DotNetType::ARRAY;
+                    val_array = true;
+
+                    let s_val = strong_ref.get_property(&p_name).unwrap();
+                    match s_val {
+                        Value::Model(arr) => {
+                            for item in arr.iter() {
+                                let s_name = "".to_string();
+                                let s_type = item.value_type();
+                                let sval_type;
+                                let sval_struct = false;
+                                let sval_array = false;
+                                let sval_val = format!(
+                                    "{:?}",
+                                    item
+                                );
+
+                                printdebug!("array item value {}", sval_val);
+
+                                match s_type {
+                                    ValueType::String => sval_type = DotNetType::STRING,
+                                    ValueType::Number => sval_type = DotNetType::NUMBER,
+                                    ValueType::Bool => sval_type = DotNetType::BOOL,
+                                    ValueType::Image => sval_type = DotNetType::IMAGE,
+                                    ValueType::Struct => {
+                                        panic!("struct inside array not supported");
+                                    },
+                                    _ => {
+                                        panic!("Slint type not supported inside an array");
+                                    }
+                                }
+
+                                val_items.push(DotNetValue {
+                                    type_name: s_name,
+                                    type_type: sval_type as i32,
+                                    type_value: sval_val,
+                                    is_struct: sval_struct,
+                                    is_array: sval_array,
+                                    struct_props: Vec::new(),
+                                    array_items: Vec::new()
+                                });
+                            }
+                        }
+                        _ => {
+                            panic!("unde'f'ined array type found ????");
+                        }
+                    }
                 },
                 ValueType::Struct => {
                     val_type = DotNetType::STRUCT;
@@ -187,7 +235,9 @@ fn internal_get_properties() -> Vec<DotNetValue> {
                                     type_type: sval_type as i32,
                                     type_value: sval_val,
                                     is_struct: sval_struct,
-                                    struct_props: Vec::new()
+                                    is_array: false,
+                                    struct_props: Vec::new(),
+                                    array_items: Vec::new()
                                 });
                             }
                         }
@@ -206,7 +256,9 @@ fn internal_get_properties() -> Vec<DotNetValue> {
                 type_type: val_type as i32,
                 type_value: val_val,
                 is_struct: val_struct,
-                struct_props: val_props
+                is_array: val_array,
+                struct_props: val_props,
+                array_items: val_items
             });
         }
     });
@@ -335,6 +387,117 @@ pub fn set_property(value: DotNetValue) {
 }
 
 #[net]
+pub fn get_array(name: &str) -> DotNetValue {
+    printdebug!("get_array()");
+
+    let mut ret: DotNetValue = DotNetValue {
+        type_name: "".to_string(),
+        type_type: DotNetType::ARRAY as i32,
+        type_value: "".to_string(),
+        is_struct: false,
+        is_array: true,
+        struct_props: Vec::new(),
+        array_items: Vec::new()
+    };
+
+    let mut val_items = Vec::new();
+
+    CURRENT_INSTANCE.with(|current| {
+        let strong_ref = current.borrow_mut().take().unwrap();
+        current.replace(Some(strong_ref.clone_strong()));
+
+        let val = strong_ref.get_property(name).unwrap();
+
+        ret.type_name = name.into();
+        // there is no "value"
+        ret.type_value = "".to_string();
+
+        // make sure that this is an array
+        if val.value_type() == ValueType::Model {
+            // get the array type
+            match val {
+                Value::Model(arr) => {
+                    for item in arr.iter() {
+                        let s_name = "".to_string();
+                        let s_type = item.value_type();
+                        let sval_type;
+                        let sval_struct = false;
+                        let sval_array = false;
+                        let sval_val = format!(
+                            "{:?}",
+                            item
+                        );
+
+                        printdebug!("array item value {}", sval_val);
+
+                        match s_type {
+                            ValueType::String => sval_type = DotNetType::STRING,
+                            ValueType::Number => sval_type = DotNetType::NUMBER,
+                            ValueType::Bool => sval_type = DotNetType::BOOL,
+                            ValueType::Image => sval_type = DotNetType::IMAGE,
+                            ValueType::Struct => {
+                                panic!("struct inside array not supported");
+                            },
+                            _ => {
+                                panic!("Slint type not supported inside an array");
+                            }
+                        }
+
+                        val_items.push(DotNetValue {
+                            type_name: s_name,
+                            type_type: sval_type as i32,
+                            type_value: sval_val,
+                            is_struct: sval_struct,
+                            is_array: sval_array,
+                            struct_props: Vec::new(),
+                            array_items: Vec::new()
+                        });
+                    }
+                }
+                _ => {
+                    panic!("undefined array type found ????");
+                }
+            }
+        } else {
+            panic!("This property is not an array");
+        }
+    });
+
+    ret.array_items = val_items;
+    ret
+}
+
+#[net]
+pub fn set_array(value: DotNetValue) {
+    printdebug!("set_array()");
+
+    CURRENT_INSTANCE.with(|current| {
+        let strong_ref = current.borrow_mut().take().unwrap();
+        current.replace(Some(strong_ref.clone_strong()));
+
+        let name = &value.type_name;
+        let items = value.array_items;
+        let s_items = VecModel::default();
+        let mut ix = 0;
+
+        for item in items {
+            if (DotNetType::STRING as i32) == item.type_type {
+                let mut str_val = item.type_value.replace("Value::String(\"", "");
+                str_val = str_val.replace("\")", "");
+                s_items.insert(ix, slint_interpreter::Value::String(str_val.into()));
+                ix += 1;
+            } else {
+                panic!("Type {} was not resolved for array items", item.type_type);
+            }
+        }
+
+        strong_ref.set_property(name, Value::Model(
+            ModelRc::from(Rc::new(s_items).clone())
+        )).unwrap();
+    });
+}
+
+#[net]
 pub fn get_struct(name: &str) -> DotNetValue {
     printdebug!("get_struct()");
 
@@ -343,7 +506,9 @@ pub fn get_struct(name: &str) -> DotNetValue {
         type_type: 0,
         type_value: "".to_string(),
         is_struct: true,
-        struct_props: Vec::new()
+        is_array: false,
+        struct_props: Vec::new(),
+        array_items: Vec::new()
     };
 
     CURRENT_INSTANCE.with(|current| {
@@ -391,7 +556,9 @@ pub fn get_struct(name: &str) -> DotNetValue {
                         type_type: sval_type as i32,
                         type_value: sval_val,
                         is_struct: sval_struct,
-                        struct_props: Vec::new()
+                        is_array: false,
+                        struct_props: Vec::new(),
+                        array_items: Vec::new()
                     });
                 }
             }
@@ -411,7 +578,9 @@ pub fn get_property(name: &str) -> DotNetValue {
         type_type: 0,
         type_value: "".to_string(),
         is_struct: false,
-        struct_props: Vec::new()
+        is_array: false,
+        struct_props: Vec::new(),
+        array_items: Vec::new()
     };
 
     CURRENT_INSTANCE.with(|current| {

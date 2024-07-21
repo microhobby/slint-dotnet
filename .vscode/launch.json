@@ -1,5 +1,77 @@
 {
     "version": "0.2.0",
-    "configurations": [],
+    "configurations": [
+        {
+            "type": "gdb",
+            "request": "launch",
+            "name": "Launch Program",
+            "target": "${workspaceFolder}/test/bin/Debug/net8.0/test",
+            "cwd": "${workspaceRoot}/test",
+            "valuesFormatting": "parseText",
+            "gdbpath": "/home/microhobby/.cargo/bin/rust-gdb",
+            "autorun": [
+                //"sharedlibrary libslint_dotnet.so"
+                //"set breakpoint pending on"
+                "set environment LD_PRELOAD bin/Debug/net8.0/libslint_dotnet.so",
+                "sharedlibrary bin/Debug/net8.0/libslint_dotnet.so",
+                "set follow-fork-mode child",
+            ],
+            "env": {
+                "WAYLAND_DISPLAY": ""
+            },
+            //"stopAtEntry": true
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Launch (lldb)",
+            "program": "${workspaceFolder}/test/bin/Debug/net8.0/test",
+            "breakpointMode": "path",
+            "sourceLanguages": [
+                "rust"
+            ],
+            "env": {
+                "WAYLAND_DISPLAY": ""
+            },
+            "args": [],
+            "relativePathBase": "${workspaceFolder}",
+            // "initCommands": [
+            //     "settings set target.env-vars LD_PRELOAD=${workspaceFolder}/target/debug/libslint_dotnet.so",
+            //     "settings set target.process.follow-fork-mode child"
+            // ],
+            "cwd": "${workspaceFolder}/test"
+        },
+        {
+            "name": "Launch (gdb)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/bin/Debug/net8.0/test",
+            "args": [
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/test/bin/Debug/net8.0",
+            "environment": [
+                {
+                    "name": "WAYLAND_DISPLAY",
+                    "value": ""
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/home/microhobby/.cargo/bin/rust-gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ],
     "compounds": []
 }

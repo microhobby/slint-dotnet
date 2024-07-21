@@ -7,6 +7,7 @@ Slint.Create("./ui/appwindow.slint");
 Console.WriteLine("Created");
 
 Console.WriteLine("Getting properties...");
+var dprop = Slint.GetProperty("testStruct");
 var props = Slint.GetProperties();
 Console.WriteLine("Geted");
 
@@ -23,7 +24,9 @@ Slint.SetProperty(new Slint.DotNetValue
     typeType = 3,
     typeValue = "./ui/assets/torizon_logo_white.svg",
     isStruct = false,
-    structProps = new List<Slint.DotNetValue>()
+    isArray = false,
+    structProps = new List<Slint.DotNetValue>(),
+    arrayItems = new List<Slint.DotNetValue>()
 });
 
 var binding = Slint.GetProperty("Width");
@@ -50,7 +53,9 @@ Slint.SetCallback("request-increase-value", () =>
         typeName = "testStruct",
         typeType = 4,
         isStruct = true,
+        isArray = false,
         typeValue = "",
+        arrayItems = new List<Slint.DotNetValue>(),
         structProps = new List<Slint.DotNetValue>
         {
             new Slint.DotNetValue
@@ -59,7 +64,9 @@ Slint.SetCallback("request-increase-value", () =>
                 typeType = 0,
                 typeValue = "modified",
                 isStruct = false,
-                structProps = new List<Slint.DotNetValue>()
+                isArray = false,
+                structProps = new List<Slint.DotNetValue>(),
+                arrayItems = new List<Slint.DotNetValue>()
             }
         }
     });
@@ -75,7 +82,9 @@ Slint.SetCallback("request-increase-value", () =>
         typeType = 1,
         typeValue = val.ToString(),
         isStruct = false,
-        structProps = new List<Slint.DotNetValue>()
+        isArray = false,
+        structProps = new List<Slint.DotNetValue>(),
+        arrayItems = new List<Slint.DotNetValue>()
     });
 
     Slint.SetProperty(new Slint.DotNetValue
@@ -84,8 +93,35 @@ Slint.SetCallback("request-increase-value", () =>
         typeType = 3,
         typeValue = "./ui/assets/toradex_logo.png",
         isStruct = false,
-        structProps = new List<Slint.DotNetValue>()
+        isArray = false,
+        structProps = new List<Slint.DotNetValue>(),
+        arrayItems = new List<Slint.DotNetValue>()
     });
+
+    var list = Slint.GetArray("lista");
+    list.arrayItems.Add(new Slint.DotNetValue
+    {
+        typeName = "",
+        typeType = 0,
+        typeValue = "dd",
+        isStruct = false,
+        isArray = false,
+        structProps = new List<Slint.DotNetValue>(),
+        arrayItems = new List<Slint.DotNetValue>()
+    });
+    // Slint.SetProperty(list);
+    Slint.SetArray(list);
+
+    var list2 = Slint.GetArray("lista");
+
+    for (var i = 0; i < list2.arrayItems.Count; i++)
+    {
+        if (
+            list.arrayItems[i].typeValue.Replace("Value::String(\"", "").Replace("\")", "") !=
+            list2.arrayItems[i].typeValue.Replace("Value::String(\"", "").Replace("\")", "")
+        ) throw new Exception("Error arrays not equal");
+        Console.WriteLine($"Item {i}: {list.arrayItems[i].typeValue} == {list2.arrayItems[i].typeValue}");
+    }
 
     return true;
 });
@@ -114,7 +150,9 @@ new Thread(() =>
                 typeType = 1,
                 typeValue = 0.ToString(),
                 isStruct = false,
-                structProps = new List<Slint.DotNetValue>()
+                isArray = false,
+                structProps = new List<Slint.DotNetValue>(),
+                arrayItems = new List<Slint.DotNetValue>()
             });
 
             return true;

@@ -8,12 +8,13 @@
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            // "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/bin/Debug/net8.0/test.dll",
             "args": [],
             "env": {
                 "RUST_BACKTRACE": "full",
+                "WAYLAND_DISPLAY": "",
                 //"GDK_BACKEND": "x11"
             },
             "cwd": "${workspaceFolder}",

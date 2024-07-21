@@ -12,10 +12,12 @@ export component AppWindow inherits Window {
     background: #2362c2;
 
     in-out property<int> counter: 42;
-    in-out property<string> text1: "";
+    in-out property<string> text1: "test";
     in-out property <bool> bool1: true;
     in-out property <image> img;
     in-out property <Test> testStruct;
+    in-out property<[string]> lista: ["a", "b", "c"];
+
     callback request-increase-value();
 
     // binding
@@ -32,6 +34,11 @@ export component AppWindow inherits Window {
         Text {
             horizontal-alignment: center;
             text: "Counter: \{root.counter}";
+        }
+        VerticalLayout {
+            for index in lista: Text {
+                text: index;
+            }
         }
         Image {
             source: img;

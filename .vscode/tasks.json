@@ -2,18 +2,36 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "build-dotnet-test-debug",
+            "hide": true,
+            "command": "dotnet",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/test",
+                "env": {
+                    "WAYLAND_DISPLAY": ""
+                }
+            },
+            "args": [
+                "build"
+            ],
+        },
+        {
             "label": "replace-nuget-debug",
             "type": "shell",
             "command": "cp",
             "args": [
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0/SlintDotnet.dll", "&&",
+                "/home/microhobby/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
+                "/home/microhobby/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/target/debug/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native/libslint_dotnet.so"
+                "/home/microhobby/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native/libslint_dotnet.so", "&&",
+                "cp",
+                "${workspaceFolder}/target/debug/libslint_dotnet.so",
+                "${workspaceFolder}/test/bin/Debug/net8.0/libslint_dotnet.so"
             ],
             "problemMatcher": [
                 "$rustc"
@@ -22,7 +40,8 @@
             "dependsOn": [
                 "build-debug",
                 "rnet-gen-debug",
-                "rnet-replace-debug"
+                "rnet-replace-debug",
+                "build-dotnet-test-debug"
             ],
             "icon": {
                 "color": "terminal.ansiBlack",
@@ -199,7 +218,8 @@
             "options": {
                 "env": {
                     "SLINT_INCLUDE_GENERATED": "1",
-                    "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG": "true"
+                    "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG": "true",
+                    "RUSTFLAGS": "-C debuginfo=2 -C opt-level=0"
                 }
             },
             "args": [
@@ -316,7 +336,9 @@
             "args": [
                 "-i",
                 "'s/slint_dotnet/\\.\\/libslint_dotnet\\.so/g'",
-                "${workspaceFolder}/target/debug/libslint_dotnet.cs"
+                "${workspaceFolder}/target/debug/libslint_dotnet.cs", "&&",
+                "cp", "${workspaceFolder}/target/debug/libslint_dotnet.cs",
+                "${workspaceFolder}/target/release/libslint_dotnet.cs"
             ],
             "problemMatcher": [
                 "$rustc"
