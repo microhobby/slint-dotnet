@@ -1,5 +1,8 @@
 use std::{
-    any::Any, borrow::Borrow, path::Path, rc::Rc, sync::Once, time::Duration
+    path::Path,
+    rc::Rc,
+    sync::Once,
+    time::Duration
 };
 use rnet::{
     Net,
@@ -7,7 +10,10 @@ use rnet::{
     Delegate0
 };
 use slint::{
-    ComponentHandle, Image, Model, ModelExt, ModelRc, Timer, TimerMode, VecModel, Weak
+    ComponentHandle,
+    Image,
+    Model,
+    ModelRc, Timer, TimerMode, VecModel, Weak
 };
 use slint_interpreter::{
     ComponentInstance,
