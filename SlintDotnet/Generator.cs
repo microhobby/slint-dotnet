@@ -3,6 +3,7 @@ using SlintAPI = SlintDotnet.SlintDotnet;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace SlintDotnet.SourceGenerator;
 
@@ -10,7 +11,7 @@ namespace SlintDotnet.SourceGenerator;
 public class Generator : ISourceGenerator
 {
     // TODO: do not forget to update the version
-    private static string PACKAGE_VERSION = "1.5.4";
+    private static string PACKAGE_VERSION = "1.5.7";
 
     protected struct struct_info {
         public int index;
@@ -28,6 +29,8 @@ public class Generator : ISourceGenerator
                 1 => "float",
                 2 => "bool",
                 3 => "Image",
+                4 => "class",
+                5 => "Array",
                 _ => "string"
             };
 
@@ -37,14 +40,16 @@ public class Generator : ISourceGenerator
                 1 => "Number",
                 2 => "Bool",
                 3 => "Image",
+                4 => "Struct",
+                5 => "Array",
                 _ => "String"
             };
 
 // add the properties
 sourceCodeStr.Append($@"
 
-    private {valType} _{property.typeName};
-    public {valType} {property.typeName} {{
+    private {valType}{(property.isArray ? "<String>" : "")} _{property.typeName}{(property.isArray ? $" = new Array<string>(\"{property.typeName}\")" : "")};
+    public {valType}{(property.isArray ? "<String>" : "")} {property.typeName} {{
         get {{
 ");
 
@@ -53,7 +58,7 @@ sourceCodeStr.Append($@"
 sourceCodeStr.Append($@"
             var sT = SlintAPI.GetStruct(""{strtI.Value.struct_name}"");
 ");
-            } else if (valType != "Image") {
+            } else if (valType != "Image" && valType != "Array") {
                 // for the primitive types
 sourceCodeStr.Append($@"
             var rT = SlintAPI.GetProperty(""{property.typeName}"")
@@ -62,7 +67,7 @@ sourceCodeStr.Append($@"
                         .Replace("")"", """");
 
 ");
-            } else {
+            } else if (valType != "Array") {
                 // for image only, return the Image object
 sourceCodeStr.Append($@"
             var rT = _{property.typeName};
@@ -96,8 +101,12 @@ sourceCodeStr.Append($@"
             } else if (valType == "class") {
 sourceCodeStr.Append($@"
             var sT = SlintAPI.GetStruct(""{property.typeName}"");
-            this._{valType} = sT;
-            return this._{valType};
+            this._{property.typeName} = sT;
+            return this._{property.typeName};
+");
+            } else if (valType == "Array") {
+sourceCodeStr.Append($@"
+            return this._{property.typeName};
 ");
             } else {
 sourceCodeStr.Append($@"
@@ -110,6 +119,7 @@ sourceCodeStr.Append($@"
 
 ");
 
+    if (property.isArray == false) {
 sourceCodeStr.Append($@"
         set {{
             _{property.typeName} = value;
@@ -128,6 +138,7 @@ sourceCodeStr.Append($@"
                 typeName = ""{strtI.Value.struct_name}"",
                 typeType = 4,
                 isStruct = true,
+                isArray = false,
                 typeValue = """",
                 structProps = new List<SlintAPI.DotNetValue>
                 {{
@@ -142,35 +153,40 @@ sourceCodeStr.Append($@"
                 typeType = 0,
                 typeValue = value.ToString(),
                 isStruct = false,
-                structProps = new List<SlintAPI.DotNetValue>()
+                structProps = new List<SlintAPI.DotNetValue>(),
+                arrayItems = new List<SlintAPI.DotNetValue>()
 ");
         } else if (valType == "float") {
 sourceCodeStr.Append($@"
                 typeType = 1,
                 typeValue = value.ToString(),
                 isStruct = false,
-                structProps = new List<SlintAPI.DotNetValue>()
+                structProps = new List<SlintAPI.DotNetValue>(),
+                arrayItems = new List<SlintAPI.DotNetValue>()
 ");
         } else if (valType == "bool") {
 sourceCodeStr.Append($@"
                 typeType = 2,
                 typeValue = value.ToString(),
                 isStruct = false,
-                structProps = new List<SlintAPI.DotNetValue>()
+                structProps = new List<SlintAPI.DotNetValue>(),
+                arrayItems = new List<SlintAPI.DotNetValue>()
 ");
         } else if (valType == "Image") {
 sourceCodeStr.Append($@"
                 typeType = 3,
                 typeValue = value.Path,
                 isStruct = false,
-                structProps = new List<SlintAPI.DotNetValue>()
+                structProps = new List<SlintAPI.DotNetValue>(),
+                arrayItems = new List<SlintAPI.DotNetValue>()
 ");
         } else {
 sourceCodeStr.Append($@"
                 typeType = 0,
                 typeValue = value.ToString(),
                 isStruct = false,
-                structProps = new List<SlintAPI.DotNetValue>()
+                structProps = new List<SlintAPI.DotNetValue>(),
+                arrayItems = new List<SlintAPI.DotNetValue>()
 ");
         }
 
@@ -187,7 +203,12 @@ sourceCodeStr.Append($@"
     }}
 
 ");
+        } else {
+sourceCodeStr.Append($@"
+    }}
+");
         }
+    }
 
         return sourceCodeStr.ToString();
     }
@@ -221,7 +242,10 @@ sourceCodeStr.Append($@"
         var home = Environment.GetEnvironmentVariable("HOME");
         var arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
 
+        // FIXME: FOR PROD
         string assemblyProbeDirectory = $"{home}/.nuget/packages/slintdotnet/{PACKAGE_VERSION}/runtimes/linux-{arch}/native/";
+        // FIXME: FOR DEBUG
+        // string assemblyProbeDirectory = $"{home}/projects/D/slint-dotnet/target/debug/";
         Directory.SetCurrentDirectory(assemblyProbeDirectory);
 
         var sourceCodeStrWin = new StringBuilder("");
@@ -345,6 +369,14 @@ sourceCodeStrWin.Append($@"
     public Window()
     {{
         SlintAPI.Create(_slintFile);
+
+        // this will run only after the UI is ready
+        Slint.Timer.Start(TimerMode.SingleShot, 1, () => {{
+            // then we can call the Init method
+            SlintInitializationPool.POOL.ForEach(i => {{
+                i.Init();
+            }});
+        }});
     }}
 
     public void Run()
