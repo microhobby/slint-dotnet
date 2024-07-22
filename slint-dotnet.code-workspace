@@ -1,0 +1,21 @@
+{
+    "folders": [
+        {
+            "name": "lib",
+            "path": "."
+        },
+        {
+            "name": "SlintDotnet",
+            "path": "./SlintDotnet"
+        },
+        {
+            "name": "test",
+            "path": "./test"
+        },
+        {
+            "name": "ProjectUI",
+            "path": "./ProjectUI"
+        }
+    ],
+    "settings": {}
+}
