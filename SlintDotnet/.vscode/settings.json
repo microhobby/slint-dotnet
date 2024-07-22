@@ -1,6 +1,10 @@
 {
-    "package_version": "1.5.4",
+    "package_version": "1.5.7",
     "files.insertFinalNewline": true,
     "workbench.activityBar.location": "top",
     "workbench.sideBar.location": "right",
+    "csharp.inlayHints.enableInlayHintsForImplicitObjectCreation": true,
+    "csharp.inlayHints.enableInlayHintsForImplicitVariableTypes": true,
+    "csharp.inlayHints.enableInlayHintsForLambdaParameterTypes": true,
+    "csharp.inlayHints.enableInlayHintsForTypes": true
 }
