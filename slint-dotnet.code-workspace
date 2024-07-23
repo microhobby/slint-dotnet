@@ -17,5 +17,12 @@
             "path": "./ProjectUI"
         }
     ],
-    "settings": {}
+    "settings": {
+        "package_version": "1.7.0",
+        "files.insertFinalNewline": true,
+        "csharp.inlayHints.enableInlayHintsForImplicitObjectCreation": true,
+        "csharp.inlayHints.enableInlayHintsForImplicitVariableTypes": true,
+        "csharp.inlayHints.enableInlayHintsForLambdaParameterTypes": true,
+        "csharp.inlayHints.enableInlayHintsForTypes": true
+    }
 }
