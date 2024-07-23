@@ -8,23 +8,24 @@ build = "build.rs"
 
 [dependencies]
 async-std = { version = "1.10.0" }
-slint = { version = "1.5.1", default-features = false, features = [
+slint = { version = "1.7.0", default-features = false, features = [
     "backend-winit",
     "backend-linuxkms-noseat",
+    "renderer-skia",
     "renderer-skia-opengl",
     "compat-1-2"
 ] }
-slint-interpreter = { version = "=1.5.1", default-features = false, features = [
+slint-interpreter = { version = "=1.7.0", default-features = false, features = [
     "display-diagnostics",
     "compat-1-2"
 ] }
-i-slint-compiler = "1.5.1"
+i-slint-compiler = "1.7.0"
 rnet = { version = "0.3.1" }
 linkme = "0.2.7"
 once_cell = "1.19.0"
 
 [build-dependencies]
-slint-build = { version = "1.5" }
+slint-build = { version = "1.7" }
 
 [lib]
 crate-type = ["cdylib"]
