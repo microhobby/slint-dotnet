@@ -109,4 +109,4 @@ This will move the action to the Slint `upgrade_in_event_loop` to be executed in
 | `duration`        | ❌            |       |
 | `angle`           | ❌            |       |
 | `struct`          | `object`      |       |
-| `array`           | ❌            |       |
+| `array`           | `List`            |    Only arrays of strings supported   |
