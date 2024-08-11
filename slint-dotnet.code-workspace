@@ -18,7 +18,7 @@
         }
     ],
     "settings": {
-        "package_version": "1.7.0",
+        "package_version": "1.7.1",
         "files.insertFinalNewline": true,
         "csharp.inlayHints.enableInlayHintsForImplicitObjectCreation": true,
         "csharp.inlayHints.enableInlayHintsForImplicitVariableTypes": true,
