@@ -49,30 +49,62 @@
             }
         },
         {
+            "label": "mkdir-new-nuget-path",
+            "type": "shell",
+            "command": "mkdir",
+            "args": [
+                "-p",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0",
+                "&&",
+                "mkdir",
+                "-p",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs",
+                "&&",
+                "mkdir",
+                "-p",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native",
+                "&&",
+                "mkdir",
+                "-p",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm64/native",
+                "&&",
+                "mkdir",
+                "-p",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm/native"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "icon": {
+                "id": "folder"
+            }
+        },
+        {
             "label": "replace-nuget-release",
             "type": "shell",
             "command": "cp",
             "args": [
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0/SlintDotnet.dll", "&&",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/lib/netstandard2.0/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/SlintDotnet/bin/Debug/netstandard2.0/SlintDotnet.dll",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/analyzers/dotnet/cs/SlintDotnet.dll", "&&",
                 "cp",
                 "${workspaceFolder}/target/release/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native/libslint_dotnet.so", "&&",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-x64/native/libslint_dotnet.so", "&&",
                 "cp",
                 "${workspaceFolder}/target/aarch64-unknown-linux-gnu/release/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm64/native/libslint_dotnet.so", "&&",
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm64/native/libslint_dotnet.so", "&&",
                 "cp",
                 "${workspaceFolder}/target/armv7-unknown-linux-gnueabihf/release/libslint_dotnet.so",
-                "/home/castello/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm/native/libslint_dotnet.so"
+                "${userHome}/.nuget/packages/slintdotnet/${config:package_version}/runtimes/linux-arm/native/libslint_dotnet.so"
             ],
             "problemMatcher": [
                 "$rustc"
             ],
             "dependsOrder": "sequence",
             "dependsOn": [
+                "mkdir-new-nuget-path",
                 "build-multiarch-container",
             ],
             "icon": {
@@ -154,7 +186,7 @@
                 "-e", "PKG_CONFIG_PATH=/usr/lib/x86-64-linux-gnu/pkgconfig",
                 "-e", "PKG_CONFIG_ALLOW_CROSS=1",
                 "-e", "BINDGEN_EXTRA_CLANG_ARGS_x86_64_unknown_linux_gnu=-I/usr/include",
-                "commontorizon/slint-sdk-amd64:3.3.0-bookworm-1.7.0",
+                "commontorizon/slint-sdk-amd64:3.3.0-bookworm-1.7.1",
                 "cargo",
                 "build",
                 "--target",
@@ -179,7 +211,7 @@
                 "-e", "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig",
                 "-e", "PKG_CONFIG_ALLOW_CROSS=1",
                 "-e", "BINDGEN_EXTRA_CLANG_ARGS_aarch64_unknown_linux_gnu=-I/usr/include",
-                "commontorizon/slint-sdk-arm64:3.3.0-bookworm-1.7.0",
+                "commontorizon/slint-sdk-arm64:3.3.0-bookworm-1.7.1",
                 "cargo",
                 "build",
                 "--target",
@@ -204,7 +236,7 @@
                 "-e", "PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig",
                 "-e", "PKG_CONFIG_ALLOW_CROSS=1",
                 "-e", "BINDGEN_EXTRA_CLANG_ARGS_arm_unknown_linux_gnu=-I/usr/include",
-                "commontorizon/slint-sdk-arm:3.3.0-bookworm-1.7.0",
+                "commontorizon/slint-sdk-arm:3.3.0-bookworm-1.7.1",
                 "cargo",
                 "build",
                 "--target",

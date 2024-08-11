@@ -38,7 +38,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="$(ProjectDir)../target/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
+        <Content Include="$(ProjectDir)../target/x86_64-unknown-linux-gnu/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
         <Content Include="$(ProjectDir)../target/armv7-unknown-linux-gnueabihf/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-arm/native" />
         <Content Include="$(ProjectDir)../target/aarch64-unknown-linux-gnu/release/libslint_dotnet.so" Pack="true" PackagePath="runtimes/linux-arm64/native" />
     </ItemGroup>

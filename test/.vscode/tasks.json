@@ -35,6 +35,11 @@
             "label": "watch",
             "command": "dotnet",
             "type": "process",
+            "options": {
+                "env": {
+                    "WAYLAND_DISPLAY": ""
+                }
+            },
             "args": [
                 "watch",
                 "run",
